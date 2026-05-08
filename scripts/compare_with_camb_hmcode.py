@@ -229,7 +229,7 @@ def compute_case(
 
 
 def run_single(args: argparse.Namespace) -> None:
-    zs = np.array([3.0, 2.0, 1.0, 0.5, 0.0], dtype=np.float64)
+    zs = args.zs
     k = np.logspace(np.log10(args.kmin), np.log10(args.kmax), args.nk)
     case = {
         "label": "custom",
@@ -280,7 +280,7 @@ def run_single(args: argparse.Namespace) -> None:
 
 
 def run_suite(args: argparse.Namespace) -> None:
-    zs = np.array([2.0, 1.0, 0.5, 0.0], dtype=np.float64)
+    zs = args.zs
     k = np.logspace(np.log10(args.kmin), np.log10(args.kmax), args.nk)
 
     print("Running CAMB-HMCode comparison suite (4 cosmologies)...")
@@ -332,6 +332,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--nk", type=int, default=128)
     parser.add_argument("--kmin", type=float, default=1e-3)
     parser.add_argument("--kmax", type=float, default=10.0)
+    parser.add_argument(
+        "--zs",
+        type=str,
+        default="2,1,0.5,0",
+        help="comma-separated redshifts, monotonically decreasing (default: 2,1,0.5,0)",
+    )
     parser.add_argument("--nM", type=int, default=256)
     parser.add_argument(
         "--T-AGN",
@@ -358,6 +364,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--wa", type=float, default=0.0)
 
     args = parser.parse_args()
+    try:
+        zs = np.array([float(x) for x in args.zs.split(",")], dtype=np.float64)
+    except Exception as exc:
+        raise ValueError(f"Could not parse --zs='{args.zs}'") from exc
+    if zs.ndim != 1 or zs.size == 0:
+        raise ValueError("--zs must define at least one redshift")
+    if np.any(np.diff(zs) > 0):
+        raise ValueError("--zs must be monotonically decreasing, e.g. '2,1,0.5,0'")
+    args.zs = zs
+
     if args.no_feedback:
         args.T_AGN = None
     return args

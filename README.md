@@ -139,14 +139,90 @@ The suite covers:
 - **`test_parity_camb.py`** — `power(..., CAMB_results, ...)` vs the original
   Python HMcode at `HMcode-python/`. Tolerance `< 5e-3` (median ~2×10⁻⁵).
 
-### Profiling and parameter studies
+### Scripts: validation, comparison, and benchmarking
 
-Optional scripts under `scripts/` for performance experiments:
+These scripts are all runnable from the repository root.
+
+#### Basic speed profile
 
 ```bash
-python scripts/profile_wrapper.py   # cold/warm timing, vs native Julia, vs orig Python
-python scripts/check_nM.py          # accuracy + timing as a function of nM
+python scripts/profile_wrapper.py
 ```
+
+What it reports:
+
+- cold vs warm wrapper call time
+- wrapper overhead vs direct native Julia call
+- speedup vs original Python HMcode
+
+#### nM convergence check
+
+```bash
+python scripts/check_nM.py
+```
+
+Sweeps `nM` and reports runtime plus relative error against `nM=1024`.
+
+#### Recipe comparison: wrapped HMCode.jl vs original Python HMcode
+
+Single cosmology plot:
+
+```bash
+python scripts/compare_recipes.py --output hmcode_recipe_comparison.png
+```
+
+Suite mode (4 cosmologies, includes `w0`, `wa`, `mnu`):
+
+```bash
+python scripts/compare_recipes.py --suite --output hmcode_recipe_suite_pct.png
+```
+
+Residual panel is in percentage:
+`100 * (P_jl / P_py - 1)`.
+
+#### Direct comparison: wrapped HMCode.jl vs CAMB HMCode
+
+Baseline (no feedback, recommended):
+
+```bash
+python scripts/compare_with_camb_hmcode.py --suite --output hmcode_vs_camb_suite_pct.png
+```
+
+Feedback test (stable low-z range):
+
+```bash
+python scripts/compare_with_camb_hmcode.py --suite --T-AGN 63095734.448 --zs 1,0.5,0 --output hmcode_vs_camb_suite_TAGN_lowz_pct.png
+```
+
+Notes:
+
+- `--zs` must be monotonically decreasing.
+- Residual panels are percentages: `100 * (P_jl / P_camb - 1)`.
+
+#### End-to-end speed vs number of redshifts
+
+```bash
+python scripts/benchmark_speed_vs_nz.py --nM 128 --repeats 3 --output benchmark_vs_nz_nM128.png
+```
+
+Benchmarks are run at `nz = 10, 30, 50, 100` and split into:
+
+- CAMB runtime
+- linear-table extraction runtime
+- HMCode wrapper runtime
+- total runtime
+
+#### Combined sweep for selected nM values
+
+```bash
+python scripts/sweep_nm_camb_comparison_and_bench.py --nM-list 128,96,64 --bench-repeats 2 --out-prefix nm_sweep_128_96_64
+```
+
+Produces:
+
+- CAMB-comparison accuracy table and plot vs `nM`
+- benchmark table and plot vs `nM` and `nz`
+- CSV outputs for both tables
 
 ---
 
