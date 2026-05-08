@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyhmcode-jl"
+version = "0.1.0"
+description = "Python wrapper around HMCode.jl (CosmologicalEmulators) via juliacall."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Marco Bonici", email = "bonici.marco@gmail.com" },
+]
+license = { text = "MIT" }
+dependencies = [
+    "juliacall>=0.9.22",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7",
+    "camb>=1.5",        # only needed for the high-level CAMB-driven layer
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+hmcode_py = ["juliapkg.json", "_interp.jl"]

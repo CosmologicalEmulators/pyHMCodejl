@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# JuliaPkg / Julia artifacts used by juliacall at runtime
+src/hmcode_py/Project.toml
+src/hmcode_py/Manifest.toml
+src/hmcode_py/pyjuliapkg/
